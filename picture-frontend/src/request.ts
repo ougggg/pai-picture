@@ -2,15 +2,13 @@ import axios from 'axios'
 import { message } from 'ant-design-vue'
 
 // 服务器配置
-const SERVER_IP = "192.168.114.17"; // 当前服务器IP地址
-const SERVER_PORT = 8123; // 后端服务端口
-const FRONTEND_PORT = 5173; // 前端服务端口
-
 const DEV_BASE_URL = ""; // 使用相对路径，通过 Vite 代理转发
-const PROD_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
+const PROD_BASE_URL = ""; // 生产环境使用相对路径，通过 nginx 代理转发
 
 // 导出服务器URL，用于生成分享链接
-export const SERVER_URL = `http://${SERVER_IP}:${FRONTEND_PORT}`;
+export const SERVER_URL = import.meta.env.MODE === 'development'
+  ? `http://localhost:5173`
+  : window.location.origin;
 
 const myAxios = axios.create({
   baseURL: import.meta.env.MODE === 'development' ? DEV_BASE_URL : PROD_BASE_URL,

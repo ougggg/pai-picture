@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: ./picture-backend
+      dockerfile: Dockerfile
+    container_name: pai-picture-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/demo_picture?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_REDIS_HOST: host.docker.internal
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_DATABASE: 4
+    ports:
+      - "8123:8123"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - pai-picture-network
+
+  frontend:
+    build:
+      context: ./picture-frontend
+      dockerfile: Dockerfile
+    container_name: pai-picture-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pai-picture-network
+
+networks:
+  pai-picture-network:
+    driver: bridge
+
+
