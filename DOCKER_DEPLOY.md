@@ -24,7 +24,11 @@ create database if not exists `demo_picture` default character set utf8mb4 colla
 
 然后执行 `picture-backend/sql/create_table.sql` 初始化表结构。
 
-### 2. 启动服务
+### 2. 配置生产环境文件
+
+参考 [配置说明 - 配置生产环境文件](#配置生产环境文件首次部署必做)
+
+### 3. 启动服务
 
 在项目根目录执行：
 
@@ -34,7 +38,7 @@ docker-compose up -d --build
 
 首次构建会下载依赖和镜像，需要几分钟时间。
 
-### 3. 访问应用
+### 4. 访问应用
 
 - **前端地址**: http://localhost
 - **后端 API**: http://localhost:8123/api
@@ -80,6 +84,39 @@ docker stats
 ```
 
 ## 配置说明
+
+### 配置生产环境文件（首次部署必做）
+
+由于 `application-prod.yml` 包含敏感信息，未提交到代码库。首次部署需要：
+
+1. **复制模板文件**：
+   ```bash
+   cp picture-backend/src/main/resources/application-prod.yml.example picture-backend/src/main/resources/application-prod.yml
+   ```
+
+2. **配置敏感信息**（两种方式任选其一）：
+
+   **方式一：直接编辑文件**
+   
+   编辑 `picture-backend/src/main/resources/application-prod.yml`，填写：
+   - COS 配置（腾讯云对象存储）
+   - 阿里云 AI API Key
+   
+   **方式二：通过环境变量配置（推荐）**
+   
+   在 `docker-compose.yml` 的 `backend` 服务中添加环境变量：
+   ```yaml
+   environment:
+     # ... 其他环境变量
+     COS_HOST: your-cos-host
+     COS_SECRET_ID: your-secret-id
+     COS_SECRET_KEY: your-secret-key
+     COS_REGION: your-region
+     COS_BUCKET: your-bucket
+     ALIYUN_AI_API_KEY: your-api-key
+   ```
+
+   > **注意**：如果不需要使用 COS 或阿里云 AI 功能，可以留空，但相关功能将无法使用。
 
 ### 修改数据库密码
 
