@@ -54,7 +54,11 @@ pai-picture/
 │   │   ├── pages/            # 页面
 │   │   ├── stores/           # 状态管理
 │   │   └── utils/            # 工具函数
+│   ├── Dockerfile            # 前端 Docker 镜像构建文件
+│   ├── nginx.conf            # Nginx 配置
 │   └── openapi.config.js     # OpenAPI 配置
+├── docker-compose.yml        # Docker Compose 编排文件
+├── DOCKER_DEPLOY.md          # Docker 部署文档
 └── README.md
 ```
 
@@ -62,10 +66,60 @@ pai-picture/
 
 ### 环境要求
 
+**方式一：Docker 部署（推荐）**
+- Docker Desktop
+- MySQL 8.0+（本地运行）
+- Redis 6.0+（本地运行）
+
+**方式二：本地开发**
 - JDK 17+
 - Node.js 18+
 - MySQL 8.0+
 - Redis 6.0+
+
+---
+
+## 🐳 Docker 一键部署
+
+### 前置准备
+
+1. **安装 Docker Desktop**
+   - Windows: [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)
+   - 确保 Docker 服务已启动
+
+2. **本地数据库准备**
+   - MySQL 运行在 `localhost:3306`
+   - Redis 运行在 `localhost:6379`
+   - 创建数据库：`create database if not exists demo_picture default character set utf8mb4 collate utf8mb4_unicode_ci;`
+   - 执行 `picture-backend/sql/create_table.sql` 初始化表结构
+
+### 部署步骤
+
+1. **配置生产环境文件**
+   ```bash
+   # 复制模板文件
+   cp picture-backend/src/main/resources/application-prod.yml.example \
+      picture-backend/src/main/resources/application-prod.yml
+   
+   # 编辑配置文件，填写 COS 和阿里云 AI 配置
+   # 或通过 docker-compose.yml 中的环境变量配置
+   ```
+
+2. **一键启动**
+   ```bash
+   docker-compose up -d --build
+   ```
+
+3. **访问应用**
+   - 前端：http://localhost
+   - 后端 API：http://localhost:8123/api
+   - 接口文档：http://localhost:8123/api/doc.html
+
+> 📖 详细部署说明请参考 [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md)
+
+---
+
+## 💻 本地开发部署
 
 ### 后端启动
 
@@ -89,19 +143,22 @@ spring:
 ```
 
 3. 配置腾讯云 COS 和阿里云 AI
-```yaml
-# 创建 application-local.yml（参考 application.yml 中的配置结构）
-cos:
-  client:
-    host: your_cos_host
-    secretId: your_secret_id
-    secretKey: your_secret_key
-    region: your_region
-    bucket: your_bucket
 
-aliYunAi:
-  apiKey: your_api_key
-```
+   创建 `application-local.yml` 文件：
+   ```yaml
+   cos:
+     client:
+       host: your_cos_host
+       secretId: your_secret_id
+       secretKey: your_secret_key
+       region: your_region
+       bucket: your_bucket
+   
+   aliYunAi:
+     apiKey: your_api_key
+   ```
+   
+   > 💡 提示：可以参考 `application.yml` 中的配置结构，或参考 `application-prod.yml.example` 模板文件
 
 4. 启动后端服务
 ```bash
@@ -180,9 +237,62 @@ npm run dev
 
 ## 📝 配置说明
 
+### 配置文件说明
 
+项目使用 Spring Boot 多环境配置：
 
-请根据 `application.yml` 中的配置结构创建对应的本地配置文件。
+- `application.yml` - 基础配置（已提交）
+- `application-local.yml` - 本地开发配置（需自行创建，已加入 .gitignore）
+- `application-prod.yml` - 生产环境配置（需自行创建，已加入 .gitignore）
+- `application-prod.yml.example` - 生产环境配置模板（已提交，可参考）
 
+### 必需配置项
 
+1. **数据库配置**（`application.yml` 或 `application-local.yml`）
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:mysql://localhost:3306/demo_picture
+       username: your_username
+       password: your_password
+     redis:
+       host: localhost
+       port: 6379
+   ```
 
+2. **腾讯云 COS 配置**（必需，用于图片存储）
+   ```yaml
+   cos:
+     client:
+       host: your_cos_host
+       secretId: your_secret_id
+       secretKey: your_secret_key
+       region: your_region
+       bucket: your_bucket
+   ```
+
+3. **阿里云 AI 配置**（必需，用于 AI 功能）
+   ```yaml
+   aliYunAi:
+     apiKey: your_api_key
+   ```
+
+### Docker 部署配置
+
+Docker 部署时，敏感信息可通过环境变量注入，详见 `docker-compose.yml` 和 `DOCKER_DEPLOY.md`。
+
+## 📚 相关文档
+
+- [Docker 部署指南](./DOCKER_DEPLOY.md) - 详细的 Docker 部署说明
+
+## 📄 许可证
+
+本项目采用开源许可证，详见 LICENSE 文件。
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+---
+
+**注意**：首次部署时，请确保已创建数据库并执行初始化脚本，同时配置好 COS 和阿里云 AI 相关服务。
