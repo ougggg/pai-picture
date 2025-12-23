@@ -17,6 +17,21 @@ export async function aiCreatePictureUsingPost(
   })
 }
 
+/** publishPictureToPublic POST /api/picture/connect/public */
+export async function publishPictureToPublicUsingPost(
+  body: API.PicturePublishToPublicRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/connect/public', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** deletePicture POST /api/picture/delete */
 export async function deletePictureUsingPost(
   body: API.DeleteRequest,
@@ -215,6 +230,21 @@ export async function doPictureReviewUsingPost(
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResponseBoolean_>('/api/picture/review', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** savePictureToPrivate POST /api/picture/save/private */
+export async function savePictureToPrivateUsingPost(
+  body: API.PictureSaveToPrivateRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/save/private', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

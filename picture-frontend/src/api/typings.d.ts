@@ -435,6 +435,10 @@ declare namespace API {
     pictureId?: number
   }
 
+  type PicturePublishToPublicRequest = {
+    pictureId?: number
+  }
+
   type PictureQueryRequest = {
     category?: string
     current?: number
@@ -466,6 +470,11 @@ declare namespace API {
     id?: number
     reviewMessage?: string
     reviewStatus?: number
+  }
+
+  type PictureSaveToPrivateRequest = {
+    pictureId?: number
+    spaceId?: number
   }
 
   type PictureTagCategory = {

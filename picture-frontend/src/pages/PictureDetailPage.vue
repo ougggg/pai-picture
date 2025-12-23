@@ -209,12 +209,50 @@
               ✨AI风格重绘
             </a-button>
 
+
+            <!-- 新增按钮：保存到私人空间 -->
+            <a-button v-if="canSaveToPrivate" type="primary" ghost @click="doSaveToPrivate">
+              保存到私人空间
+            </a-button>
+
+             <!-- 新增按钮：发布到公共空间 -->
+            <a-popconfirm
+              v-if="canPublishToPublic"
+              title="确定要发布到公共图库吗？需经过管理员审核。"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="doPublishToPublic"
+            >
+               <a-button type="primary" ghost>
+                发布到公共空间
+              </a-button>
+            </a-popconfirm>
+
           </a-space>
         </a-card>
       </a-col>
     </a-row>
     <!-- 分享模态框组件 -->
     <ShareModal ref="shareModalRef" title="分享图片" :link="shareLink || ''" />
+
+    <!-- 选择空间模态框 -->
+    <a-modal
+      v-model:visible="showSpaceModal"
+      title="选择要保存的空间"
+      @ok="handleSaveToPrivate"
+      :confirmLoading="spaceLoading"
+    >
+      <div v-if="userSpaces.length > 0">
+        <a-select v-model:value="selectedSpaceId" style="width: 100%" placeholder="请选择空间">
+          <a-select-option v-for="space in userSpaces" :key="space.id" :value="space.id">
+            {{ space.spaceName }}
+          </a-select-option>
+        </a-select>
+      </div>
+      <div v-else>
+        <p>您还没有创建空间，请前往创建。</p>
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -252,6 +290,8 @@ import {
   createPicturePortraitStyleRedrawTaskUsingPost,
   getPicturePortraitStyleRedrawTaskUsingGet,
   uploadPictureByUrlUsingPost,
+  savePictureToPrivateUsingPost,
+  publishPictureToPublicUsingPost,
 } from '@/api/pictureController.ts'
 import { listSpaceVoByPageUsingPost } from '@/api/spaceController.ts'
 
@@ -714,6 +754,94 @@ const doStyleRedraw = () => {
   showStyleRedraw.value = !showStyleRedraw.value
   if (!showStyleRedraw.value) {
     cancelStyleRedraw()
+  }
+}
+
+// ----- 1. 保存到私人空间操作 -----
+const showSpaceModal = ref(false)
+const selectedSpaceId = ref<number>()
+const userSpaces = ref<API.SpaceVO[]>([])
+const spaceLoading = ref(false)
+
+// 检查是否显示"保存到私人空间"按钮：当前图片在公共空间(spaceId 为空) & 用户已登录
+const canSaveToPrivate = computed(() => {
+  return !picture.value.spaceId && loginUserId.value
+})
+
+const doSaveToPrivate = async () => {
+  if (!loginUserId.value) {
+    message.warning('请先登录')
+    return
+  }
+  // 获取用户空间列表
+  try {
+    const res = await listSpaceVoByPageUsingPost({
+      userId: loginUserId.value,
+      current: 1,
+      pageSize: 100, // 获取足够多的空间，暂不分页
+    })
+    if (res.data.code === 0) {
+      userSpaces.value = res.data.data?.records || []
+      if (userSpaces.value.length === 0) {
+        message.warning('您还没有创建空间，请先创建空间')
+        // 可以在这里引导跳转到创建空间页面
+        return
+      }
+      // 默认选中第一个
+      selectedSpaceId.value = userSpaces.value[0].id
+      showSpaceModal.value = true
+    } else {
+       message.error('获取空间列表失败：' + res.data.message)
+    }
+  } catch (error: any) {
+    message.error('获取空间列表失败：' + error.message)
+  }
+}
+
+const handleSaveToPrivate = async () => {
+  if (!selectedSpaceId.value || !picture.value.id) {
+    return
+  }
+  spaceLoading.value = true
+  try {
+    const res = await savePictureToPrivateUsingPost({
+      pictureId: picture.value.id,
+      spaceId: selectedSpaceId.value,
+    })
+    if (res.data.code === 0) {
+      message.success('保存成功')
+      showSpaceModal.value = false
+    } else {
+      message.error('保存失败：' + res.data.message)
+    }
+  } catch (error: any) {
+    message.error('保存失败：' + error.message)
+  } finally {
+    spaceLoading.value = false
+  }
+}
+
+// ----- 2. 发布到公共空间操作 -----
+// 检查是否显示"发布到公共空间"按钮：当前图片在私有空间 & 用户是作者
+const canPublishToPublic = computed(() => {
+  return !!picture.value.spaceId && picture.value.user?.id === loginUserId.value
+})
+
+const doPublishToPublic = async () => {
+  if (!picture.value.id) {
+    return
+  }
+  try {
+    const res = await publishPictureToPublicUsingPost({
+      pictureId: picture.value.id,
+    })
+    if (res.data.code === 0) {
+      message.success('已提交发布申请，请等待管理员审核')
+    } else {
+       message.error('发布失败：' + res.data.message)
+    }
+  } catch (error: any) {
+     message.error('发布失败：' + error.message)
   }
 }
 </script>

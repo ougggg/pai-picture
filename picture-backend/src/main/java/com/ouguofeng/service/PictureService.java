@@ -15,22 +15,23 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
-* @author 20571
-* @description 针对表【picture(图片)】的数据库操作Service
-* @createDate 2025-08-20 15:11:31
-*/
+ * @author 20571
+ * @description 针对表【picture(图片)】的数据库操作Service
+ * @createDate 2025-08-20 15:11:31
+ */
 public interface PictureService extends IService<Picture> {
 
     /**
      * 上传图片
-     *文件输入源
+     * 文件输入源
+     * 
      * @param pictureUploadRequest 图片上传请求类
      * @param loginUser
      * @return
      */
     PictureVO uploadPicture(Object inputSource,
-                            PictureUploadRequest pictureUploadRequest,
-                            User loginUser);
+            PictureUploadRequest pictureUploadRequest,
+            User loginUser);
 
     /**
      * 批量抓取和创建图片
@@ -40,7 +41,7 @@ public interface PictureService extends IService<Picture> {
      * @return 成功创建的图片数
      */
     Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest,
-                                 User loginUser);
+            User loginUser);
 
     /**
      * 校验图片
@@ -85,6 +86,7 @@ public interface PictureService extends IService<Picture> {
 
     /**
      * 设置审核状态参数
+     * 
      * @param picture
      * @param loginUser
      */
@@ -145,7 +147,8 @@ public interface PictureService extends IService<Picture> {
      * @param createPictureOutPaintingTaskRequest
      * @param loginUser
      */
-    CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
+    CreateOutPaintingTaskResponse createPictureOutPaintingTask(
+            CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
 
     /**
      * 创建人物风格重绘任务
@@ -153,6 +156,22 @@ public interface PictureService extends IService<Picture> {
      * @param createPicturePortraitStyleRedrawTaskRequest
      * @param loginUser
      */
-    CreatePortraitStyleRedrawTaskResponse createPicturePortraitStyleRedrawTask(CreatePicturePortraitStyleRedrawTaskRequest createPicturePortraitStyleRedrawTaskRequest, User loginUser);
+    CreatePortraitStyleRedrawTaskResponse createPicturePortraitStyleRedrawTask(
+            CreatePicturePortraitStyleRedrawTaskRequest createPicturePortraitStyleRedrawTaskRequest, User loginUser);
 
+    /**
+     * 保存图片到私人空间
+     *
+     * @param pictureSaveToPrivateRequest
+     * @param loginUser
+     */
+    void savePictureToPrivate(PictureSaveToPrivateRequest pictureSaveToPrivateRequest, User loginUser);
+
+    /**
+     * 发布图片到公共空间
+     *
+     * @param picturePublishToPublicRequest
+     * @param loginUser
+     */
+    void publishPictureToPublic(PicturePublishToPublicRequest picturePublishToPublicRequest, User loginUser);
 }
